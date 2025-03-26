@@ -2,7 +2,19 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const QuestionsPage());
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: QuestionsPage(),
+    );
+  }
 }
 
 class QuestionsPage extends StatefulWidget {
@@ -15,6 +27,9 @@ class QuestionsPage extends StatefulWidget {
 class _QuestionsPageState extends State<QuestionsPage> {
   int score = 0;
   int currentIndex = 0;
+
+  final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
+      GlobalKey<ScaffoldMessengerState>();
 
   // Game images (original, options, correct answer)
   List<Map<String, dynamic>> gameData = [
@@ -58,19 +73,19 @@ class _QuestionsPageState extends State<QuestionsPage> {
     });
 
     // Show feedback message
-    ScaffoldMessenger.of(context).showSnackBar(
+    _scaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
         content: Text(
           isCorrect ? "✔ Correct! +10 points" : "❌ Wrong! -5 points",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         backgroundColor: isCorrect ? Colors.green : Colors.red,
-        duration: Duration(seconds: 1),
+        duration: const Duration(seconds: 1),
       ),
     );
 
     // Wait 1.1 seconds before moving to the next question
-    Future.delayed(Duration(milliseconds: 1100), () {
+    Future.delayed(const Duration(milliseconds: 1100), () {
       if (mounted) {
         setState(() {
           currentIndex = (currentIndex + 1) % gameData.length;
@@ -82,13 +97,11 @@ class _QuestionsPageState extends State<QuestionsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
+    return ScaffoldMessenger(
+      key: _scaffoldMessengerKey,
+      child: Scaffold(
         appBar: AppBar(
-          title: Text(
-            "ReflectIQ",
-          ),
+          title: const Text("ReflectIQ"),
           backgroundColor: Colors.blueAccent,
         ),
         body: Center(
@@ -97,12 +110,13 @@ class _QuestionsPageState extends State<QuestionsPage> {
             children: [
               Text(
                 "Score : $score",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Image.asset(gameData[currentIndex]['original'],
                   width: 200, height: 200),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children:
