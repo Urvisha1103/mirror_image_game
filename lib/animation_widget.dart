@@ -13,9 +13,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: const MyHomePage(),
-      // routes: {
-      //   '/login': (context) => LoginPage(), // Define the login route
-      // },
     );
   }
 }
@@ -73,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 20),
               Text(
-                'Miroor Mind',
+                'ReflectIQ',
                 style: const TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,

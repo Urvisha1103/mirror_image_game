@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MirrorMind',
+      title: 'ReflectIQ',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -36,7 +36,7 @@ class SplashScreen extends StatelessWidget {
                 'assets/images/splash.png'), // Replace with your image path
             const SizedBox(height: 32.0),
             const Text(
-              'Mirror Mind',
+              'ReflectIQ',
               style: TextStyle(
                 fontSize: 48.0,
                 fontWeight: FontWeight.bold,

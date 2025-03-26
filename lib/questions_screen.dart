@@ -87,7 +87,7 @@ class _QuestionsPageState extends State<QuestionsPage> {
       home: Scaffold(
         appBar: AppBar(
           title: Text(
-            "Mirror Mind",
+            "ReflectIQ",
           ),
           backgroundColor: Colors.blueAccent,
         ),
