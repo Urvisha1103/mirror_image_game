@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:mirror_image_game/sound_manager.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: QuestionsPage(),
+      home: const QuestionsPage(),
     );
   }
 }
@@ -24,14 +26,16 @@ class QuestionsPage extends StatefulWidget {
   State<QuestionsPage> createState() => _QuestionsPageState();
 }
 
-class _QuestionsPageState extends State<QuestionsPage> {
+class _QuestionsPageState extends State<QuestionsPage>
+    with SingleTickerProviderStateMixin {
   int score = 0;
   int currentIndex = 0;
+  Timer? _timer;
+  late AnimationController _animationController;
 
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
 
-  // Game images (original, options, correct answer)
   List<Map<String, dynamic>> gameData = [
     {
       'original': 'assets/images/img1.jpg',
@@ -57,6 +61,13 @@ class _QuestionsPageState extends State<QuestionsPage> {
   void initState() {
     super.initState();
     shuffleOptions();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
+    );
+
+    startTimer();
   }
 
   void shuffleOptions() {
@@ -65,18 +76,39 @@ class _QuestionsPageState extends State<QuestionsPage> {
     });
   }
 
+  void startTimer() {
+    _timer?.cancel(); // Cancel existing timer if any
+    _timer = Timer(const Duration(seconds: 10), () {
+      if (mounted) {
+        setState(() {
+          currentIndex = (currentIndex + 1) % gameData.length;
+          shuffleOptions();
+          _animationController.reset();
+          _animationController.forward();
+        });
+      }
+    });
+  }
+
   void checkAnswer(String selectedImage) {
     bool isCorrect = selectedImage == gameData[currentIndex]['correct'];
 
-    setState(() {
-      score = isCorrect ? score + 10 : max(0, score - 5);
-    });
+    if (isCorrect) {
+      SoundManager.playCorrectSound();
+      setState(() {
+        score += 10;
+      });
+    } else {
+      SoundManager.playWrongSound();
+      setState(() {
+        score = max(0, score - 5);
+      });
+    }
 
-    // Show feedback message
     _scaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
         content: Text(
-          isCorrect ? "✅ Correct! +10 points" : "❌ Wrong! -5 points",
+          isCorrect ? "✔ Correct! +10 points" : "❌ Wrong! -5 points",
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         backgroundColor: isCorrect ? Colors.green : Colors.red,
@@ -84,15 +116,25 @@ class _QuestionsPageState extends State<QuestionsPage> {
       ),
     );
 
-    // Wait 1.1 seconds before moving to the next question
     Future.delayed(const Duration(milliseconds: 1100), () {
       if (mounted) {
         setState(() {
           currentIndex = (currentIndex + 1) % gameData.length;
+          shuffleOptions();
+          startTimer();
+          _animationController.reset();
+          _animationController.forward();
         });
-        shuffleOptions();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _animationController.dispose();
+    SoundManager.dispose();
+    super.dispose();
   }
 
   @override
