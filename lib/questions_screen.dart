@@ -158,7 +158,7 @@ class _QuestionsPageState extends State<QuestionsPage>
     _scaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(
         content: Text(
-          isCorrect ? "✔ Correct! +10 points" : "❌ Wrong! -5 points",
+          isCorrect ? "✔ Correct! +10 points 🎉" : "❌ Wrong! -5 points 😕",
           style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         backgroundColor: isCorrect ? Colors.green : Colors.red,
