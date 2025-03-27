@@ -2,82 +2,84 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mirror_image_game/questions_screen.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class AnimationWidget extends StatefulWidget {
+  const AnimationWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: const MyHomePage(),
-    );
-  }
+  State<AnimationWidget> createState() => _AnimationWidgetState();
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _animation;
+class _AnimationWidgetState extends State<AnimationWidget>
+    with TickerProviderStateMixin {
+  late AnimationController _scaleController;
+  late AnimationController _fadeController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat();
-    _animation =
-        Tween<double>(begin: 0, end: 1.0).animate(_animationController);
 
-    // Add the Timer for navigation after 3 seconds
+    // Scale Animation (Bouncy effect)
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..forward();
+    _scaleAnimation =
+        CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut);
+
+    // Fade Animation
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..forward();
+    _fadeAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_fadeController);
+
+    // Navigate to the game screen after animation
     Timer(const Duration(seconds: 3), () {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  QuestionsPage())); // Navigate to the Questions or starting page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const QuestionsPage()),
+      );
     });
   }
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _scaleController.dispose();
+    _fadeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFCCDFF3),
+      backgroundColor: const Color(0xFFCCDFF3), // Light blue background
       body: Center(
-        child: ScaleTransition(
-          scale: _animation,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset(
-                'assets/images/splash.png', // replace with your image
-                width: 150,
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'ReflectIQ',
-                style: const TextStyle(
-                    fontSize: 30,
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/splash.png', 
+                  width: 150,
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'ReflectIQ',
+                  style: TextStyle(
+                    fontSize: 36,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF001858),
-                    fontStyle: FontStyle.italic),
-              ),
-            ],
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
