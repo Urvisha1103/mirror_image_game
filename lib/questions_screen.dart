@@ -4,28 +4,6 @@ import 'package:mirror_image_game/sound_manager.dart';
 import 'package:mirror_image_game/timer.dart';
 import 'package:provider/provider.dart';
 
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => GameTimer(
-        maxTime: 10,
-        onTimeUp: () {}, // Temporary placeholder, it will be overridden
-      ),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: const QuestionsPage(),
-      ),
-    );
-  }
-}
-
 class QuestionsPage extends StatefulWidget {
   const QuestionsPage({super.key});
 
@@ -121,8 +99,7 @@ class _QuestionsPageState extends State<QuestionsPage>
   @override
   void initState() {
     super.initState();
-    shuffleQuestionsAndOptions(); // for shuffle questions
-    // shuffleOptions(); // for shuffle options
+    shuffleQuestionsAndOptions();
 
     _animationController = AnimationController(
       vsync: this,
@@ -139,13 +116,11 @@ class _QuestionsPageState extends State<QuestionsPage>
 
   void shuffleQuestionsAndOptions() {
     setState(() {
-      gameData.shuffle(); // question shuffles randomly
-
+      gameData.shuffle();
       for (var question in gameData) {
-        question['options'].shuffle(); // Shuffle the options for each question
+        question['options'].shuffle();
       }
-
-      currentIndex = 0; // reset to first after shuffling
+      currentIndex = 0;
     });
   }
 
@@ -154,7 +129,7 @@ class _QuestionsPageState extends State<QuestionsPage>
       setState(() {
         currentIndex = (currentIndex + 1) % gameData.length;
         if (currentIndex == 0) {
-          shuffleQuestionsAndOptions(); // Reshuffle after all questions are completed
+          shuffleQuestionsAndOptions();
         } else {
           gameData[currentIndex]['options'].shuffle();
         }
@@ -219,50 +194,162 @@ class _QuestionsPageState extends State<QuestionsPage>
       child: ScaffoldMessenger(
         key: _scaffoldMessengerKey,
         child: Scaffold(
-          appBar: AppBar(
-            title: const Text("ReflectIQ"),
-            backgroundColor: Colors.blueAccent,
-          ),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.lightBlueAccent, Colors.purpleAccent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Stack(
               children: [
-                Text(
-                  "Score : $score",
-                  style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.bold),
+                /// **Decorative Background Elements**
+                Positioned(
+                  top: 30,
+                  left: 50,
+                  child: Icon(Icons.star, color: Colors.yellow, size: 40),
                 ),
-                const SizedBox(height: 20),
-
-                /// Timer Display
-                Consumer<GameTimer>(
-                  builder: (context, timer, child) {
-                    return Text(
-                      "Time Left: ${timer.timeLeft}s",
-                      style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red),
-                    );
-                  },
+                Positioned(
+                  top: 120,
+                  right: 30,
+                  child: Icon(Icons.star, color: Colors.orange, size: 30),
+                ),
+                Positioned(
+                  bottom: 100,
+                  left: 20,
+                  child: Icon(Icons.cloud, color: Colors.white, size: 50),
+                ),
+                Positioned(
+                  bottom: 50,
+                  right: 50,
+                  child: Icon(Icons.cloud, color: Colors.white70, size: 60),
                 ),
 
-                const SizedBox(height: 20),
-                Image.asset(gameData[currentIndex]['original'],
-                    width: 200, height: 200),
-                const SizedBox(height: 20),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children:
-                      gameData[currentIndex]['options'].map<Widget>((option) {
-                    return GestureDetector(
-                      onTap: () => checkAnswer(option),
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Image.asset(option, width: 100, height: 100),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 40),
+
+                      /// **Score & Timer Row**
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.emoji_events,
+                                  color: Colors.amber, size: 30),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Score: $score",
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Icon(Icons.hourglass_bottom,
+                                  color: Colors.yellow, size: 30),
+                              const SizedBox(width: 8),
+                              Consumer<GameTimer>(
+                                builder: (context, timer, child) {
+                                  return Text(
+                                    "${timer.timeLeft}s",
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.yellow,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    );
-                  }).toList(),
+
+                      const SizedBox(height: 30),
+
+                      /// **Question Image**
+                      Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white, width: 6),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.white.withOpacity(0.7),
+                              spreadRadius: 3,
+                              blurRadius: 7,
+                              offset: const Offset(3, 3),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.asset(
+                            gameData[currentIndex]['original'],
+                            width: 160,
+                            height: 160,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      /// **Options**
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: gameData[currentIndex]['options']
+                            .map<Widget>((option) {
+                          return GestureDetector(
+                            onTap: () => checkAnswer(option),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(15),
+                                  splashColor:
+                                      Colors.yellowAccent.withOpacity(0.5),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.yellow, width: 3),
+                                      borderRadius: BorderRadius.circular(15),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.orangeAccent
+                                              .withOpacity(0.5),
+                                          spreadRadius: 2,
+                                          blurRadius: 5,
+                                          offset: const Offset(2, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(15),
+                                      child: Image.asset(
+                                        option,
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
