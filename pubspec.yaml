@@ -36,6 +36,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   audioplayers: ^5.2.1
+  provider: ^6.0.5
 
 
 dev_dependencies:
@@ -71,6 +72,30 @@ flutter:
     - assets/images/RigthImg2.jpg
     - assets/images/WrongImg2.jpg
     - assets/images/WrongImg2(2).jpg
+    - assets/images/img3.jpg
+    - assets/images/RigthImg3.jpg
+    - assets/images/WrongImg3.jpg
+    - assets/images/WrongImg3(1).jpg
+    - assets/images/img4.jpg
+    - assets/images/RigthImg4.jpg
+    - assets/images/WrongImg4.jpg
+    - assets/images/WrongImg4(1).jpg
+    - assets/images/img5.jpg
+    - assets/images/RigthImg5.jpg
+    - assets/images/WrongImg5.jpg
+    - assets/images/WrongImg5(1).jpg
+    - assets/images/img6.jpg
+    - assets/images/RigthImg6.jpg
+    - assets/images/WrongImg6.jpg
+    - assets/images/WrongImg6(1).jpg
+    - assets/images/img7.jpg
+    - assets/images/RigthImg7.jpg
+    - assets/images/WrongImg7.jpg
+    - assets/images/WrongImg7(1).jpg
+    - assets/images/img8.jpg
+    - assets/images/RigthImg8.jpg
+    - assets/images/WrongImg8.jpg
+    - assets/images/WrongImg8(1).jpg
     - assets/sounds/Correct.mp3  # sounds
     - assets/sounds/Wrong.mp3
 

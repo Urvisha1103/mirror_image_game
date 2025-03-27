@@ -1,7 +1,8 @@
-import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:mirror_image_game/sound_manager.dart';
+import 'package:mirror_image_game/timer.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -12,9 +13,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: const QuestionsPage(),
+    return ChangeNotifierProvider(
+      create: (context) => GameTimer(
+        maxTime: 10,
+        onTimeUp: () {}, // Temporary placeholder, it will be overridden
+      ),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: const QuestionsPage(),
+      ),
     );
   }
 }
@@ -30,8 +37,8 @@ class _QuestionsPageState extends State<QuestionsPage>
     with SingleTickerProviderStateMixin {
   int score = 0;
   int currentIndex = 0;
-  Timer? _timer;
   late AnimationController _animationController;
+  late GameTimer gameTimer;
 
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
@@ -55,39 +62,107 @@ class _QuestionsPageState extends State<QuestionsPage>
       ],
       'correct': 'assets/images/RigthImg2.jpg',
     },
+    {
+      'original': 'assets/images/img3.jpg',
+      'options': [
+        'assets/images/WrongImg3.jpg',
+        'assets/images/WrongImg3(1).jpg',
+        'assets/images/RigthImg3.jpg'
+      ],
+      'correct': 'assets/images/RigthImg3.jpg',
+    },
+    {
+      'original': 'assets/images/img4.jpg',
+      'options': [
+        'assets/images/WrongImg4.jpg',
+        'assets/images/WrongImg4(1).jpg',
+        'assets/images/RigthImg4.jpg'
+      ],
+      'correct': 'assets/images/RigthImg4.jpg',
+    },
+    {
+      'original': 'assets/images/img5.jpg',
+      'options': [
+        'assets/images/WrongImg5.jpg',
+        'assets/images/WrongImg5(1).jpg',
+        'assets/images/RigthImg5.jpg'
+      ],
+      'correct': 'assets/images/RigthImg5.jpg',
+    },
+    {
+      'original': 'assets/images/img6.jpg',
+      'options': [
+        'assets/images/WrongImg6.jpg',
+        'assets/images/WrongImg6(1).jpg',
+        'assets/images/RigthImg6.jpg'
+      ],
+      'correct': 'assets/images/RigthImg6.jpg',
+    },
+    {
+      'original': 'assets/images/img7.jpg',
+      'options': [
+        'assets/images/WrongImg7.jpg',
+        'assets/images/WrongImg7(1).jpg',
+        'assets/images/RigthImg7.jpg'
+      ],
+      'correct': 'assets/images/RigthImg7.jpg',
+    },
+    {
+      'original': 'assets/images/img8.jpg',
+      'options': [
+        'assets/images/WrongImg8.jpg',
+        'assets/images/WrongImg8(1).jpg',
+        'assets/images/RigthImg8.jpg'
+      ],
+      'correct': 'assets/images/RigthImg8.jpg',
+    },
   ];
 
   @override
   void initState() {
     super.initState();
-    shuffleOptions();
+    shuffleQuestionsAndOptions(); // for shuffle questions
+    // shuffleOptions(); // for shuffle options
 
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
 
-    startTimer();
+    gameTimer = GameTimer(
+      maxTime: 10,
+      onTimeUp: handleTimeUp,
+    );
+
+    gameTimer.startTimer();
   }
 
-  void shuffleOptions() {
+  void shuffleQuestionsAndOptions() {
     setState(() {
-      gameData[currentIndex]['options'].shuffle();
+      gameData.shuffle(); // question shuffles randomly
+
+      for (var question in gameData) {
+        question['options'].shuffle(); // Shuffle the options for each question
+      }
+
+      currentIndex = 0; // reset to first after shuffling
     });
   }
 
-  void startTimer() {
-    _timer?.cancel(); // Cancel existing timer if any
-    _timer = Timer(const Duration(seconds: 10), () {
-      if (mounted) {
-        setState(() {
-          currentIndex = (currentIndex + 1) % gameData.length;
-          shuffleOptions();
-          _animationController.reset();
-          _animationController.forward();
-        });
-      }
-    });
+  void handleTimeUp() {
+    if (mounted) {
+      setState(() {
+        currentIndex = (currentIndex + 1) % gameData.length;
+        if (currentIndex == 0) {
+          shuffleQuestionsAndOptions(); // Reshuffle after all questions are completed
+        } else {
+          gameData[currentIndex]['options'].shuffle();
+        }
+        _animationController.reset();
+        _animationController.forward();
+        gameTimer.startTimer();
+      });
+    }
   }
 
   void checkAnswer(String selectedImage) {
@@ -120,8 +195,8 @@ class _QuestionsPageState extends State<QuestionsPage>
       if (mounted) {
         setState(() {
           currentIndex = (currentIndex + 1) % gameData.length;
-          shuffleOptions();
-          startTimer();
+          shuffleQuestionsAndOptions();
+          gameTimer.startTimer();
           _animationController.reset();
           _animationController.forward();
         });
@@ -131,7 +206,7 @@ class _QuestionsPageState extends State<QuestionsPage>
 
   @override
   void dispose() {
-    _timer?.cancel();
+    gameTimer.stopTimer();
     _animationController.dispose();
     SoundManager.dispose();
     super.dispose();
@@ -139,40 +214,58 @@ class _QuestionsPageState extends State<QuestionsPage>
 
   @override
   Widget build(BuildContext context) {
-    return ScaffoldMessenger(
-      key: _scaffoldMessengerKey,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text("ReflectIQ"),
-          backgroundColor: Colors.blueAccent,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Score : $score",
-                style:
-                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 20),
-              Image.asset(gameData[currentIndex]['original'],
-                  width: 200, height: 200),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children:
-                    gameData[currentIndex]['options'].map<Widget>((option) {
-                  return GestureDetector(
-                    onTap: () => checkAnswer(option),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Image.asset(option, width: 100, height: 100),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
+    return ChangeNotifierProvider.value(
+      value: gameTimer,
+      child: ScaffoldMessenger(
+        key: _scaffoldMessengerKey,
+        child: Scaffold(
+          appBar: AppBar(
+            title: const Text("ReflectIQ"),
+            backgroundColor: Colors.blueAccent,
+          ),
+          body: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Score : $score",
+                  style: const TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 20),
+
+                /// Timer Display
+                Consumer<GameTimer>(
+                  builder: (context, timer, child) {
+                    return Text(
+                      "Time Left: ${timer.timeLeft}s",
+                      style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.red),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 20),
+                Image.asset(gameData[currentIndex]['original'],
+                    width: 200, height: 200),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children:
+                      gameData[currentIndex]['options'].map<Widget>((option) {
+                    return GestureDetector(
+                      onTap: () => checkAnswer(option),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Image.asset(option, width: 100, height: 100),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
