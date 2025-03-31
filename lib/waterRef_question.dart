@@ -16,6 +16,10 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
     with SingleTickerProviderStateMixin {
   int score = 0;
   int currentIndex = 0;
+  int hintsLeft = 3; // 🆕 Hint counter
+
+  bool showHint = false; // 🆕 To track if the hint is active
+
   late AnimationController _animationController;
   late GameTimer gameTimer;
   late ConfettiController _confettiController;
@@ -150,13 +154,12 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
 
     if (isCorrect) {
       SoundManager.playCorrectSound();
-      _confettiController.play(); // Play confitti effect
+      _confettiController.play();
       setState(() {
         score += 10;
       });
       Future.delayed(const Duration(seconds: 5), () {
-        // ⏳ Confetti lasts 3 seconds
-        _confettiController.stop(); // Stop confetti after 3 seconds
+        _confettiController.stop();
       });
     } else {
       SoundManager.playWrongSound();
@@ -189,11 +192,26 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
     });
   }
 
+  void useHint() {
+    if (hintsLeft > 0) {
+      setState(() {
+        showHint = true;
+        hintsLeft--; // Decrease hint count
+      });
+
+      Future.delayed(const Duration(seconds: 3), () {
+        setState(() {
+          showHint = false;
+        });
+      });
+    }
+  }
+
   @override
   void dispose() {
     gameTimer.stopTimer();
     _animationController.dispose();
-    _confettiController.dispose(); // Dispose confetti
+    _confettiController.dispose();
     SoundManager.dispose();
     super.dispose();
   }
@@ -207,20 +225,17 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
         child: Scaffold(
           body: Stack(
             children: [
-              // 🎉 Confetti Effect Positioned in the Center
               Align(
                 alignment: Alignment.topCenter,
                 child: ConfettiWidget(
                   confettiController: _confettiController,
-                  blastDirection: pi / 2, // Blast upward
-                  emissionFrequency: 0.6, // Adjust frequency
-                  numberOfParticles: 40, // Number of confetti
-                  gravity: 0.2, // Slow falling effect
+                  blastDirection: pi / 2,
+                  emissionFrequency: 0.6,
+                  numberOfParticles: 40,
+                  gravity: 0.2,
                   shouldLoop: false,
                 ),
               ),
-
-              // 🌟 Existing UI - DO NOT CHANGE OTHER PARTS
               Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
@@ -234,8 +249,6 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
                   child: Column(
                     children: [
                       const SizedBox(height: 40),
-
-                      /// **Score & Timer Row**
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -275,10 +288,7 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 30),
-
-                      /// **Question Image**
                       Container(
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.white, width: 6),
@@ -302,54 +312,33 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
                           ),
                         ),
                       ),
-
                       const SizedBox(height: 20),
-
-                      /// **Options**
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: gameData[currentIndex]['options']
-                            .map<Widget>((option) {
-                          return GestureDetector(
-                            onTap: () => checkAnswer(option),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(15),
-                                  splashColor:
-                                      Colors.yellowAccent.withOpacity(0.5),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: Colors.yellow, width: 3),
-                                      borderRadius: BorderRadius.circular(15),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.orangeAccent
-                                              .withOpacity(0.5),
-                                          spreadRadius: 2,
-                                          blurRadius: 5,
-                                          offset: const Offset(2, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(15),
-                                      child: Image.asset(
-                                        option,
-                                        width: 100,
-                                        height: 100,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
+                        children: gameData[currentIndex]['options'].map<Widget>(
+                          (option) {
+                            bool isCorrect =
+                                option == gameData[currentIndex]['correct'];
+                            return GestureDetector(
+                              onTap: () => checkAnswer(option),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: showHint && isCorrect
+                                          ? Colors.green
+                                          : Colors.yellow,
+                                      width: 3),
                                 ),
+                                child: Image.asset(option, width: 100),
                               ),
-                            ),
-                          );
-                        }).toList(),
+                            );
+                          },
+                        ).toList(),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: hintsLeft > 0 ? useHint : null,
+                        child: Text("Hint ($hintsLeft left)"),
                       ),
                     ],
                   ),

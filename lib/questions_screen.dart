@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mirror_image_game/sound_manager.dart';
 import 'package:mirror_image_game/timer.dart';
 import 'package:provider/provider.dart';
+import 'package:vibration/vibration.dart';
 
 class QuestionsPage extends StatefulWidget {
   const QuestionsPage({super.key});
@@ -15,6 +16,9 @@ class _QuestionsPageState extends State<QuestionsPage>
     with SingleTickerProviderStateMixin {
   int score = 0;
   int currentIndex = 0;
+  int hintCount = 3; // Number of hints available
+  bool showHint = false; // To show the highlighted answer
+
   late AnimationController _animationController;
   late GameTimer gameTimer;
 
@@ -145,11 +149,13 @@ class _QuestionsPageState extends State<QuestionsPage>
 
     if (isCorrect) {
       SoundManager.playCorrectSound();
+      Vibration.vibrate(duration: 100); // short vibration for rigth answer
       setState(() {
         score += 10;
       });
     } else {
       SoundManager.playWrongSound();
+      Vibration.vibrate(duration: 300); // longer vibration for wrong answer
       setState(() {
         score = max(0, score - 5);
       });
@@ -179,6 +185,30 @@ class _QuestionsPageState extends State<QuestionsPage>
     });
   }
 
+  void useHint() {
+    if (hintCount > 0) {
+      setState(() {
+        showHint = true;
+        hintCount--;
+      });
+
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() {
+            showHint = false;
+          });
+        }
+      });
+    } else {
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(
+          content: Text("No hints left!"),
+          duration: Duration(seconds: 1),
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() {
     gameTimer.stopTimer();
@@ -204,7 +234,6 @@ class _QuestionsPageState extends State<QuestionsPage>
             ),
             child: Stack(
               children: [
-                /// **Decorative Background Elements**
                 const Positioned(
                   top: 30,
                   left: 50,
@@ -220,19 +249,11 @@ class _QuestionsPageState extends State<QuestionsPage>
                   left: 20,
                   child: Icon(Icons.cloud, color: Colors.white, size: 50),
                 ),
-                const Positioned(
-                  bottom: 50,
-                  right: 50,
-                  child: Icon(Icons.cloud, color: Colors.white70, size: 60),
-                ),
-
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
                       const SizedBox(height: 40),
-
-                      /// **Score & Timer Row**
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -272,78 +293,50 @@ class _QuestionsPageState extends State<QuestionsPage>
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: 30),
-
-                      /// **Question Image**
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white, width: 6),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.7),
-                              spreadRadius: 3,
-                              blurRadius: 7,
-                              offset: const Offset(3, 3),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.asset(
-                            gameData[currentIndex]['original'],
-                            width: 160,
-                            height: 160,
-                            fit: BoxFit.cover,
-                          ),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: useHint,
+                        icon: const Icon(Icons.lightbulb_outline,
+                            color: Colors.yellow),
+                        label: Text("Hint ($hintCount left)"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purpleAccent,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          textStyle: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ),
-
                       const SizedBox(height: 20),
-
-                      /// **Options**
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          gameData[currentIndex]['original'],
+                          width: 160,
+                          height: 160,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: gameData[currentIndex]['options']
                             .map<Widget>((option) {
+                          bool isCorrect =
+                              option == gameData[currentIndex]['correct'];
+
                           return GestureDetector(
                             onTap: () => checkAnswer(option),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(15),
-                                  splashColor:
-                                      Colors.yellowAccent.withOpacity(0.5),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                          color: Colors.yellow, width: 3),
-                                      borderRadius: BorderRadius.circular(15),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.orangeAccent
-                                              .withOpacity(0.5),
-                                          spreadRadius: 2,
-                                          blurRadius: 5,
-                                          offset: const Offset(2, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(15),
-                                      child: Image.asset(
-                                        option,
-                                        width: 100,
-                                        height: 100,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: showHint && isCorrect
+                                        ? Colors.green
+                                        : Colors.yellow,
+                                    width: showHint && isCorrect ? 6 : 3),
                               ),
+                              child:
+                                  Image.asset(option, width: 100, height: 100),
                             ),
                           );
                         }).toList(),

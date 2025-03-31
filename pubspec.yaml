@@ -38,7 +38,9 @@ dependencies:
   audioplayers: ^5.2.1
   provider: ^6.0.5
   confetti: ^0.7.0
-  rive: ^0.12.3
+  flare_flutter: ^3.0.2
+  rive: ^0.11.2
+  vibration: ^1.7.0
 
 
 dev_dependencies:
@@ -100,8 +102,6 @@ flutter:
     - assets/images/WrongImg8(1).jpg
     - assets/sounds/Correct.mp3  # sounds
     - assets/sounds/Wrong.mp3
-    - assets/characters/happy_bear.png  # characters
-    - assets/characters/sad_bear.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
