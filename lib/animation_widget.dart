@@ -65,7 +65,7 @@ class _AnimationWidgetState extends State<AnimationWidget>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  'assets/images/splash.png', 
+                  'assets/images/splash.png',
                   width: 150,
                 ),
                 const SizedBox(height: 20),

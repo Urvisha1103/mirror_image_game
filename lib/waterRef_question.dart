@@ -3,20 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:mirror_image_game/sound_manager.dart';
 import 'package:mirror_image_game/timer.dart';
 import 'package:provider/provider.dart';
+import 'package:confetti/confetti.dart';
 
-class QuestionsPage extends StatefulWidget {
-  const QuestionsPage({super.key});
+class WaterrefQuestion extends StatefulWidget {
+  const WaterrefQuestion({super.key});
 
   @override
-  State<QuestionsPage> createState() => _QuestionsPageState();
+  State<WaterrefQuestion> createState() => _WaterrefQuestionState();
 }
 
-class _QuestionsPageState extends State<QuestionsPage>
+class _WaterrefQuestionState extends State<WaterrefQuestion>
     with SingleTickerProviderStateMixin {
   int score = 0;
   int currentIndex = 0;
   late AnimationController _animationController;
   late GameTimer gameTimer;
+  late ConfettiController _confettiController;
 
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
@@ -29,7 +31,7 @@ class _QuestionsPageState extends State<QuestionsPage>
         'assets/images/RigthImg1.jpg',
         'assets/images/WrongImg1(1).jpg'
       ],
-      'correct': 'assets/images/RigthImg1.jpg',
+      'correct': 'assets/images/WrongImg1.jpg',
     },
     {
       'original': 'assets/images/img2.jpg',
@@ -38,7 +40,7 @@ class _QuestionsPageState extends State<QuestionsPage>
         'assets/images/WrongImg2(2).jpg',
         'assets/images/RigthImg2.jpg'
       ],
-      'correct': 'assets/images/RigthImg2.jpg',
+      'correct': 'assets/images/WrongImg2.jpg',
     },
     {
       'original': 'assets/images/img3.jpg',
@@ -47,7 +49,7 @@ class _QuestionsPageState extends State<QuestionsPage>
         'assets/images/WrongImg3(1).jpg',
         'assets/images/RigthImg3.jpg'
       ],
-      'correct': 'assets/images/RigthImg3.jpg',
+      'correct': 'assets/images/WrongImg3(1).jpg',
     },
     {
       'original': 'assets/images/img4.jpg',
@@ -56,7 +58,7 @@ class _QuestionsPageState extends State<QuestionsPage>
         'assets/images/WrongImg4(1).jpg',
         'assets/images/RigthImg4.jpg'
       ],
-      'correct': 'assets/images/RigthImg4.jpg',
+      'correct': 'assets/images/WrongImg4(1).jpg',
     },
     {
       'original': 'assets/images/img5.jpg',
@@ -65,7 +67,7 @@ class _QuestionsPageState extends State<QuestionsPage>
         'assets/images/WrongImg5(1).jpg',
         'assets/images/RigthImg5.jpg'
       ],
-      'correct': 'assets/images/RigthImg5.jpg',
+      'correct': 'assets/images/WrongImg5.jpg',
     },
     {
       'original': 'assets/images/img6.jpg',
@@ -74,7 +76,7 @@ class _QuestionsPageState extends State<QuestionsPage>
         'assets/images/WrongImg6(1).jpg',
         'assets/images/RigthImg6.jpg'
       ],
-      'correct': 'assets/images/RigthImg6.jpg',
+      'correct': 'assets/images/WrongImg6(1).jpg',
     },
     {
       'original': 'assets/images/img7.jpg',
@@ -83,7 +85,7 @@ class _QuestionsPageState extends State<QuestionsPage>
         'assets/images/WrongImg7(1).jpg',
         'assets/images/RigthImg7.jpg'
       ],
-      'correct': 'assets/images/RigthImg7.jpg',
+      'correct': 'assets/images/WrongImg7.jpg',
     },
     {
       'original': 'assets/images/img8.jpg',
@@ -92,7 +94,7 @@ class _QuestionsPageState extends State<QuestionsPage>
         'assets/images/WrongImg8(1).jpg',
         'assets/images/RigthImg8.jpg'
       ],
-      'correct': 'assets/images/RigthImg8.jpg',
+      'correct': 'assets/images/WrongImg8.jpg',
     },
   ];
 
@@ -110,6 +112,9 @@ class _QuestionsPageState extends State<QuestionsPage>
       maxTime: 10,
       onTimeUp: handleTimeUp,
     );
+
+    _confettiController =
+        ConfettiController(duration: const Duration(seconds: 3));
 
     gameTimer.startTimer();
   }
@@ -145,8 +150,13 @@ class _QuestionsPageState extends State<QuestionsPage>
 
     if (isCorrect) {
       SoundManager.playCorrectSound();
+      _confettiController.play(); // Play confitti effect
       setState(() {
         score += 10;
+      });
+      Future.delayed(const Duration(seconds: 5), () {
+        // ⏳ Confetti lasts 3 seconds
+        _confettiController.stop(); // Stop confetti after 3 seconds
       });
     } else {
       SoundManager.playWrongSound();
@@ -183,6 +193,7 @@ class _QuestionsPageState extends State<QuestionsPage>
   void dispose() {
     gameTimer.stopTimer();
     _animationController.dispose();
+    _confettiController.dispose(); // Dispose confetti
     SoundManager.dispose();
     super.dispose();
   }
@@ -194,39 +205,31 @@ class _QuestionsPageState extends State<QuestionsPage>
       child: ScaffoldMessenger(
         key: _scaffoldMessengerKey,
         child: Scaffold(
-          body: Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.lightBlueAccent, Colors.purpleAccent],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          body: Stack(
+            children: [
+              // 🎉 Confetti Effect Positioned in the Center
+              Align(
+                alignment: Alignment.topCenter,
+                child: ConfettiWidget(
+                  confettiController: _confettiController,
+                  blastDirection: pi / 2, // Blast upward
+                  emissionFrequency: 0.6, // Adjust frequency
+                  numberOfParticles: 40, // Number of confetti
+                  gravity: 0.2, // Slow falling effect
+                  shouldLoop: false,
+                ),
               ),
-            ),
-            child: Stack(
-              children: [
-                /// **Decorative Background Elements**
-                const Positioned(
-                  top: 30,
-                  left: 50,
-                  child: Icon(Icons.star, color: Colors.yellow, size: 40),
-                ),
-                const Positioned(
-                  top: 120,
-                  right: 30,
-                  child: Icon(Icons.star, color: Colors.orange, size: 30),
-                ),
-                const Positioned(
-                  bottom: 100,
-                  left: 20,
-                  child: Icon(Icons.cloud, color: Colors.white, size: 50),
-                ),
-                const Positioned(
-                  bottom: 50,
-                  right: 50,
-                  child: Icon(Icons.cloud, color: Colors.white70, size: 60),
-                ),
 
-                Padding(
+              // 🌟 Existing UI - DO NOT CHANGE OTHER PARTS
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.lightBlueAccent, Colors.purpleAccent],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
@@ -351,8 +354,8 @@ class _QuestionsPageState extends State<QuestionsPage>
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

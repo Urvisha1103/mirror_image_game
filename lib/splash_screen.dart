@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:mirror_image_game/questions_screen.dart';
+import 'package:mirror_image_game/Selection_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -31,7 +31,8 @@ class _SplashScreenState extends State<SplashScreen>
     Timer(const Duration(seconds: 10), () {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const QuestionsPage()),
+        MaterialPageRoute(
+            builder: (context) => const ReflectionSelectionScreen()),
       );
     });
   }
