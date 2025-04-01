@@ -1,8 +1,5 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:mirror_image_game/animation_widget.dart';
 import 'package:mirror_image_game/splash_screen.dart';
-import 'package:mirror_image_game/questions_screen.dart';
 
 void main() {
   runApp(const MyApp());

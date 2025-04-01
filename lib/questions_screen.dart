@@ -335,8 +335,8 @@ class _QuestionsPageState extends State<QuestionsPage>
                                         : Colors.yellow,
                                     width: showHint && isCorrect ? 6 : 3),
                               ),
-                              child:
-                                  Image.asset(option, width: 100, height: 100),
+                              child: Image.asset(option,
+                                  width: 100, height: 100, fit: BoxFit.cover),
                             ),
                           );
                         }).toList(),

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:mirror_image_game/sound_manager.dart';
 import 'package:mirror_image_game/timer.dart';
 import 'package:provider/provider.dart';
-import 'package:confetti/confetti.dart';
+import 'package:vibration/vibration.dart';
 
 class WaterrefQuestion extends StatefulWidget {
   const WaterrefQuestion({super.key});
@@ -16,13 +16,11 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
     with SingleTickerProviderStateMixin {
   int score = 0;
   int currentIndex = 0;
-  int hintsLeft = 3; // 🆕 Hint counter
-
-  bool showHint = false; // 🆕 To track if the hint is active
+  int hintCount = 3; // Number of hints available
+  bool showHint = false; // To show the highlighted answer
 
   late AnimationController _animationController;
   late GameTimer gameTimer;
-  late ConfettiController _confettiController;
 
   final GlobalKey<ScaffoldMessengerState> _scaffoldMessengerKey =
       GlobalKey<ScaffoldMessengerState>();
@@ -117,9 +115,6 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
       onTimeUp: handleTimeUp,
     );
 
-    _confettiController =
-        ConfettiController(duration: const Duration(seconds: 3));
-
     gameTimer.startTimer();
   }
 
@@ -154,15 +149,13 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
 
     if (isCorrect) {
       SoundManager.playCorrectSound();
-      _confettiController.play();
+      Vibration.vibrate(duration: 100); // short vibration for rigth answer
       setState(() {
         score += 10;
       });
-      Future.delayed(const Duration(seconds: 5), () {
-        _confettiController.stop();
-      });
     } else {
       SoundManager.playWrongSound();
+      Vibration.vibrate(duration: 300); // longer vibration for wrong answer
       setState(() {
         score = max(0, score - 5);
       });
@@ -193,17 +186,26 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
   }
 
   void useHint() {
-    if (hintsLeft > 0) {
+    if (hintCount > 0) {
       setState(() {
         showHint = true;
-        hintsLeft--; // Decrease hint count
+        hintCount--;
       });
 
-      Future.delayed(const Duration(seconds: 3), () {
-        setState(() {
-          showHint = false;
-        });
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() {
+            showHint = false;
+          });
+        }
       });
+    } else {
+      _scaffoldMessengerKey.currentState?.showSnackBar(
+        const SnackBar(
+          content: Text("No hints left!"),
+          duration: Duration(seconds: 1),
+        ),
+      );
     }
   }
 
@@ -211,7 +213,6 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
   void dispose() {
     gameTimer.stopTimer();
     _animationController.dispose();
-    _confettiController.dispose();
     SoundManager.dispose();
     super.dispose();
   }
@@ -223,28 +224,32 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
       child: ScaffoldMessenger(
         key: _scaffoldMessengerKey,
         child: Scaffold(
-          body: Stack(
-            children: [
-              Align(
-                alignment: Alignment.topCenter,
-                child: ConfettiWidget(
-                  confettiController: _confettiController,
-                  blastDirection: pi / 2,
-                  emissionFrequency: 0.6,
-                  numberOfParticles: 40,
-                  gravity: 0.2,
-                  shouldLoop: false,
-                ),
+          body: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.lightBlueAccent, Colors.purpleAccent],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.lightBlueAccent, Colors.purpleAccent],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+            ),
+            child: Stack(
+              children: [
+                const Positioned(
+                  top: 30,
+                  left: 50,
+                  child: Icon(Icons.star, color: Colors.yellow, size: 40),
                 ),
-                child: Padding(
+                const Positioned(
+                  top: 120,
+                  right: 30,
+                  child: Icon(Icons.star, color: Colors.orange, size: 30),
+                ),
+                const Positioned(
+                  bottom: 100,
+                  left: 20,
+                  child: Icon(Icons.cloud, color: Colors.white, size: 50),
+                ),
+                Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
@@ -288,63 +293,59 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
                           ),
                         ],
                       ),
-                      const SizedBox(height: 30),
-                      Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white, width: 6),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.white.withOpacity(0.7),
-                              spreadRadius: 3,
-                              blurRadius: 7,
-                              offset: const Offset(3, 3),
-                            ),
-                          ],
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: useHint,
+                        icon: const Icon(Icons.lightbulb_outline,
+                            color: Colors.yellow),
+                        label: Text("Hint ($hintCount left)"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purpleAccent,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          textStyle: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                         ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.asset(
-                            gameData[currentIndex]['original'],
-                            width: 160,
-                            height: 160,
-                            fit: BoxFit.cover,
-                          ),
+                      ),
+                      const SizedBox(height: 20),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          gameData[currentIndex]['original'],
+                          width: 160,
+                          height: 160,
+                          fit: BoxFit.cover,
                         ),
                       ),
                       const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: gameData[currentIndex]['options'].map<Widget>(
-                          (option) {
-                            bool isCorrect =
-                                option == gameData[currentIndex]['correct'];
-                            return GestureDetector(
-                              onTap: () => checkAnswer(option),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                      color: showHint && isCorrect
-                                          ? Colors.green
-                                          : Colors.yellow,
-                                      width: 3),
-                                ),
-                                child: Image.asset(option, width: 100),
+                        children: gameData[currentIndex]['options']
+                            .map<Widget>((option) {
+                          bool isCorrect =
+                              option == gameData[currentIndex]['correct'];
+
+                          return GestureDetector(
+                            onTap: () => checkAnswer(option),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: showHint && isCorrect
+                                        ? Colors.green
+                                        : Colors.yellow,
+                                    width: showHint && isCorrect ? 6 : 3),
                               ),
-                            );
-                          },
-                        ).toList(),
-                      ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: hintsLeft > 0 ? useHint : null,
-                        child: Text("Hint ($hintsLeft left)"),
+                              child: Image.asset(option,
+                                  width: 100, height: 100, fit: BoxFit.cover),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
