@@ -81,7 +81,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 const SizedBox(height: 10),
                 const Text(
-                  "Fun with Mirror Images!",
+                  "Fun with Reflect Images!",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,

@@ -116,6 +116,9 @@ class _QuestionsPageState extends State<QuestionsPage>
     );
 
     gameTimer.startTimer();
+
+    // Start background music
+    SoundManager.playBackgroundMusic();
   }
 
   void shuffleQuestionsAndOptions() {
@@ -217,6 +220,46 @@ class _QuestionsPageState extends State<QuestionsPage>
     super.dispose();
   }
 
+  void _showExitConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: const Color.fromARGB(255, 248, 247, 152),
+          title: const Text(
+            "Exit Game?",
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            "Are you sure you want to exit?",
+            style: TextStyle(fontSize: 18),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                "No",
+                style: TextStyle(fontSize: 18, color: Colors.blue),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(); // Exits game screen
+              },
+              child: const Text(
+                "Yes",
+                style: TextStyle(fontSize: 18, color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
@@ -272,6 +315,56 @@ class _QuestionsPageState extends State<QuestionsPage>
                               ),
                             ],
                           ),
+
+                          // Buttons Row
+                          Row(
+                            children: [
+                              // Sound Effects Toggle Button
+                              IconButton(
+                                icon: Icon(
+                                  SoundManager.soundEnabled
+                                      ? Icons.volume_up
+                                      : Icons.volume_off,
+                                  color: Colors.white,
+                                ),
+                                iconSize: 32,
+                                tooltip: "Toggle Sound Effects",
+                                onPressed: () {
+                                  setState(() {
+                                    SoundManager.toggleSoundEffects();
+                                  });
+                                },
+                              ),
+
+                              // Background Music Toggle Button
+                              IconButton(
+                                icon: Icon(
+                                  SoundManager.musicEnabled
+                                      ? Icons.music_note
+                                      : Icons.music_off,
+                                  color: Colors.white,
+                                ),
+                                iconSize: 32,
+                                tooltip: "Toggle Background Music",
+                                onPressed: () {
+                                  setState(() {
+                                    SoundManager.toggleBackgroundMusic();
+                                  });
+                                },
+                              ),
+
+                              // Exit Button
+                              IconButton(
+                                icon: const Icon(Icons.exit_to_app,
+                                    color: Colors.red),
+                                iconSize: 32,
+                                tooltip: "Exit Game",
+                                onPressed: () {
+                                  _showExitConfirmationDialog();
+                                },
+                              ),
+                            ],
+                          ),
                           Row(
                             children: [
                               const Icon(Icons.hourglass_bottom,
@@ -308,13 +401,26 @@ class _QuestionsPageState extends State<QuestionsPage>
                         ),
                       ),
                       const SizedBox(height: 20),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.asset(
-                          gameData[currentIndex]['original'],
-                          width: 160,
-                          height: 160,
-                          fit: BoxFit.cover,
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.yellowAccent
+                                  .withOpacity(0.8), // Glowing effect color
+                              blurRadius: 20, // Intensity of the glow
+                              spreadRadius: 5, // How far it spreads
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20),
+                          child: Image.asset(
+                            gameData[currentIndex]['original'],
+                            width: 160,
+                            height: 160,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -325,18 +431,37 @@ class _QuestionsPageState extends State<QuestionsPage>
                           bool isCorrect =
                               option == gameData[currentIndex]['correct'];
 
-                          return GestureDetector(
-                            onTap: () => checkAnswer(option),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: showHint && isCorrect
-                                        ? Colors.green
-                                        : Colors.yellow,
-                                    width: showHint && isCorrect ? 6 : 3),
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8.0), // Space between options
+                            child: GestureDetector(
+                              onTap: () => checkAnswer(option),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: showHint && isCorrect
+                                          ? Colors.green
+                                          : Colors.yellow,
+                                      width: showHint && isCorrect ? 6 : 3),
+                                  borderRadius: BorderRadius.circular(
+                                      15), // Rounded corners
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 4,
+                                      offset: Offset(2, 2), // Adds depth
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                      12), // Match border radius
+                                  child: Image.asset(option,
+                                      width: 100,
+                                      height: 100,
+                                      fit: BoxFit.cover),
+                                ),
                               ),
-                              child: Image.asset(option,
-                                  width: 100, height: 100, fit: BoxFit.cover),
                             ),
                           );
                         }).toList(),
