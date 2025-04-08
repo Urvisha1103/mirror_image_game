@@ -27,7 +27,7 @@ class SoundManager {
 
       // Gradually increase volume (fade-in effect)
       for (double volume = 0.0; volume <= 1.0; volume += 0.1) {
-        await Future.delayed(Duration(milliseconds: 100));
+        await Future.delayed(const Duration(milliseconds: 100));
         await _bgPlayer.setVolume(volume);
       }
     }
@@ -36,7 +36,7 @@ class SoundManager {
   static Future<void> stopBackgroundMusic() async {
     // Gradually decrease volume (fade-out effect)
     for (double volume = 1.0; volume >= 0.0; volume -= 0.1) {
-      await Future.delayed(Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 100));
       await _bgPlayer.setVolume(volume);
     }
     await _bgPlayer.stop();

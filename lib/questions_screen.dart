@@ -4,6 +4,8 @@ import 'package:mirror_image_game/sound_manager.dart';
 import 'package:mirror_image_game/timer.dart';
 import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
+import 'package:wave/wave.dart';
+import 'package:wave/config.dart';
 
 class QuestionsPage extends StatefulWidget {
   const QuestionsPage({super.key});
@@ -16,8 +18,8 @@ class _QuestionsPageState extends State<QuestionsPage>
     with SingleTickerProviderStateMixin {
   int score = 0;
   int currentIndex = 0;
-  int hintCount = 3; // Number of hints available
-  bool showHint = false; // To show the highlighted answer
+  int hintCount = 3;
+  bool showHint = false;
 
   late AnimationController _animationController;
   late GameTimer gameTimer;
@@ -117,7 +119,6 @@ class _QuestionsPageState extends State<QuestionsPage>
 
     gameTimer.startTimer();
 
-    // Start background music
     SoundManager.playBackgroundMusic();
   }
 
@@ -152,13 +153,13 @@ class _QuestionsPageState extends State<QuestionsPage>
 
     if (isCorrect) {
       SoundManager.playCorrectSound();
-      Vibration.vibrate(duration: 100); // short vibration for rigth answer
+      Vibration.vibrate(duration: 100);
       setState(() {
         score += 10;
       });
     } else {
       SoundManager.playWrongSound();
-      Vibration.vibrate(duration: 300); // longer vibration for wrong answer
+      Vibration.vibrate(duration: 300);
       setState(() {
         score = max(0, score - 5);
       });
@@ -228,31 +229,23 @@ class _QuestionsPageState extends State<QuestionsPage>
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           backgroundColor: const Color.fromARGB(255, 248, 247, 152),
-          title: const Text(
-            "Exit Game?",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          content: const Text(
-            "Are you sure you want to exit?",
-            style: TextStyle(fontSize: 18),
-          ),
+          title: const Text("Exit Game?",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          content: const Text("Are you sure you want to exit?",
+              style: TextStyle(fontSize: 18)),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text(
-                "No",
-                style: TextStyle(fontSize: 18, color: Colors.blue),
-              ),
+              child: const Text("No",
+                  style: TextStyle(fontSize: 18, color: Colors.blue)),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                Navigator.of(context).pop(); // Exits game screen
+                Navigator.of(context).pop();
               },
-              child: const Text(
-                "Yes",
-                style: TextStyle(fontSize: 18, color: Colors.red),
-              ),
+              child: const Text("Yes",
+                  style: TextStyle(fontSize: 18, color: Colors.red)),
             ),
           ],
         );
@@ -278,20 +271,17 @@ class _QuestionsPageState extends State<QuestionsPage>
             child: Stack(
               children: [
                 const Positioned(
-                  top: 30,
-                  left: 50,
-                  child: Icon(Icons.star, color: Colors.yellow, size: 40),
-                ),
+                    top: 30,
+                    left: 50,
+                    child: Icon(Icons.star, color: Colors.yellow, size: 40)),
                 const Positioned(
-                  top: 120,
-                  right: 30,
-                  child: Icon(Icons.star, color: Colors.orange, size: 30),
-                ),
+                    top: 120,
+                    right: 30,
+                    child: Icon(Icons.star, color: Colors.orange, size: 30)),
                 const Positioned(
-                  bottom: 100,
-                  left: 20,
-                  child: Icon(Icons.cloud, color: Colors.white, size: 50),
-                ),
+                    bottom: 100,
+                    left: 20,
+                    child: Icon(Icons.cloud, color: Colors.white, size: 50)),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -300,93 +290,59 @@ class _QuestionsPageState extends State<QuestionsPage>
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              const Icon(Icons.emoji_events,
-                                  color: Colors.amber, size: 30),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Score: $score",
+                          Row(children: [
+                            const Icon(Icons.emoji_events,
+                                color: Colors.amber, size: 30),
+                            const SizedBox(width: 8),
+                            Text("Score: $score",
                                 style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          // Buttons Row
-                          Row(
-                            children: [
-                              // Sound Effects Toggle Button
-                              IconButton(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white)),
+                          ]),
+                          Row(children: [
+                            IconButton(
                                 icon: Icon(
-                                  SoundManager.soundEnabled
-                                      ? Icons.volume_up
-                                      : Icons.volume_off,
-                                  color: Colors.white,
-                                ),
+                                    SoundManager.soundEnabled
+                                        ? Icons.volume_up
+                                        : Icons.volume_off,
+                                    color: Colors.white),
                                 iconSize: 32,
                                 tooltip: "Toggle Sound Effects",
-                                onPressed: () {
-                                  setState(() {
-                                    SoundManager.toggleSoundEffects();
-                                  });
-                                },
-                              ),
-
-                              // Background Music Toggle Button
-                              IconButton(
+                                onPressed: () => setState(
+                                    () => SoundManager.toggleSoundEffects())),
+                            IconButton(
                                 icon: Icon(
-                                  SoundManager.musicEnabled
-                                      ? Icons.music_note
-                                      : Icons.music_off,
-                                  color: Colors.white,
-                                ),
+                                    SoundManager.musicEnabled
+                                        ? Icons.music_note
+                                        : Icons.music_off,
+                                    color: Colors.white),
                                 iconSize: 32,
                                 tooltip: "Toggle Background Music",
-                                onPressed: () {
-                                  setState(() {
-                                    SoundManager.toggleBackgroundMusic();
-                                  });
-                                },
-                              ),
-
-                              // Exit Button
-                              IconButton(
+                                onPressed: () => setState(() =>
+                                    SoundManager.toggleBackgroundMusic())),
+                            IconButton(
                                 icon: const Icon(Icons.exit_to_app,
                                     color: Colors.red),
                                 iconSize: 32,
                                 tooltip: "Exit Game",
-                                onPressed: () {
-                                  _showExitConfirmationDialog();
-                                },
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Icon(Icons.hourglass_bottom,
-                                  color: Colors.yellow, size: 30),
-                              const SizedBox(width: 8),
-                              Consumer<GameTimer>(
-                                builder: (context, timer, child) {
-                                  return Text(
+                                onPressed: _showExitConfirmationDialog),
+                          ]),
+                          Row(children: [
+                            const Icon(Icons.hourglass_bottom,
+                                color: Colors.yellow, size: 30),
+                            const SizedBox(width: 8),
+                            Consumer<GameTimer>(
+                                builder: (context, timer, child) => Text(
                                     "${timer.timeLeft}s",
                                     style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.yellow,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.yellow))),
+                          ]),
                         ],
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 40),
                       ElevatedButton.icon(
                         onPressed: useHint,
                         icon: const Icon(Icons.lightbulb_outline,
@@ -400,28 +356,29 @@ class _QuestionsPageState extends State<QuestionsPage>
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.yellowAccent
-                                  .withOpacity(0.8), // Glowing effect color
-                              blurRadius: 20, // Intensity of the glow
-                              spreadRadius: 5, // How far it spreads
+                      const SizedBox(height: 30),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.only(left: 30), // shift right
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.asset(
+                                gameData[currentIndex]['original'],
+                                width: 160,
+                                height: 160,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(20),
-                          child: Image.asset(
-                            gameData[currentIndex]['original'],
-                            width: 160,
-                            height: 160,
-                            fit: BoxFit.cover,
                           ),
-                        ),
+
+                          const SizedBox(width: 12),
+
+                          // Mirror zone with wave animation
+                          buildMirrorZone(160),
+                        ],
                       ),
                       const SizedBox(height: 20),
                       Row(
@@ -430,10 +387,9 @@ class _QuestionsPageState extends State<QuestionsPage>
                             .map<Widget>((option) {
                           bool isCorrect =
                               option == gameData[currentIndex]['correct'];
-
                           return Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8.0), // Space between options
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
                             child: GestureDetector(
                               onTap: () => checkAnswer(option),
                               child: Container(
@@ -443,19 +399,16 @@ class _QuestionsPageState extends State<QuestionsPage>
                                           ? Colors.green
                                           : Colors.yellow,
                                       width: showHint && isCorrect ? 6 : 3),
-                                  borderRadius: BorderRadius.circular(
-                                      15), // Rounded corners
-                                  boxShadow: [
+                                  borderRadius: BorderRadius.circular(15),
+                                  boxShadow: const [
                                     BoxShadow(
-                                      color: Colors.black26,
-                                      blurRadius: 4,
-                                      offset: Offset(2, 2), // Adds depth
-                                    ),
+                                        color: Colors.black26,
+                                        blurRadius: 4,
+                                        offset: Offset(2, 2))
                                   ],
                                 ),
                                 child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                      12), // Match border radius
+                                  borderRadius: BorderRadius.circular(12),
                                   child: Image.asset(option,
                                       width: 100,
                                       height: 100,
@@ -476,4 +429,62 @@ class _QuestionsPageState extends State<QuestionsPage>
       ),
     );
   }
+}
+
+Widget buildMirrorZone(double size) {
+  return Container(
+    width: size,
+    height: size,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.blueAccent.withOpacity(0.4),
+          blurRadius: 12,
+          spreadRadius: 2,
+        ),
+      ],
+    ),
+    child: Stack(
+      children: [
+        WaveWidget(
+          config: CustomConfig(
+            gradients: [
+              [Colors.cyanAccent, Colors.blueAccent],
+              [Colors.purpleAccent, Colors.deepPurpleAccent],
+            ],
+            durations: [3000, 19440],
+            heightPercentages: [0.25, 0.26],
+            blur: const MaskFilter.blur(BlurStyle.normal, 6),
+            gradientBegin: Alignment.topLeft,
+            gradientEnd: Alignment.bottomRight,
+          ),
+          waveAmplitude: 0,
+          backgroundColor: Colors.transparent,
+          size: Size(double.infinity, double.infinity),
+        ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: const EdgeInsets.all(6.0),
+            child: Text(
+              '✨ Mirror ✨',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                shadows: [
+                  Shadow(
+                    offset: Offset(1, 1),
+                    blurRadius: 4,
+                    color: Colors.purpleAccent,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
 }

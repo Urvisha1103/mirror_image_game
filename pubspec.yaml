@@ -41,6 +41,7 @@ dependencies:
   flare_flutter: ^3.0.2
   rive: ^0.11.2
   vibration: ^1.7.0
+  wave: ^0.2.0
 
 
 dev_dependencies:

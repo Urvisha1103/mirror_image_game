@@ -4,6 +4,8 @@ import 'package:mirror_image_game/sound_manager.dart';
 import 'package:mirror_image_game/timer.dart';
 import 'package:provider/provider.dart';
 import 'package:vibration/vibration.dart';
+import 'package:wave/wave.dart';
+import 'package:wave/config.dart';
 
 class WaterrefQuestion extends StatefulWidget {
   const WaterrefQuestion({super.key});
@@ -423,7 +425,34 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 10),
+
+                      // 🌊 Wave Effect in the Middle
+                      SizedBox(
+                        height: 80,
+                        width: double.infinity,
+                        child: WaveWidget(
+                          config: CustomConfig(
+                            gradients: [
+                              [Colors.blue.shade300, Colors.blue.shade100],
+                              [
+                                Colors.lightBlueAccent.withOpacity(0.4),
+                                Colors.white54
+                              ],
+                            ],
+                            durations: [32000, 21000],
+                            heightPercentages: [0.3, 0.35],
+                            blur: const MaskFilter.blur(BlurStyle.solid, 4),
+                            gradientBegin: Alignment.bottomLeft,
+                            gradientEnd: Alignment.topRight,
+                          ),
+                          backgroundColor: Colors.transparent,
+                          size: const Size(double.infinity, double.infinity),
+                          waveAmplitude: 0,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: gameData[currentIndex]['options']
@@ -445,7 +474,7 @@ class _WaterrefQuestionState extends State<WaterrefQuestion>
                                       width: showHint && isCorrect ? 6 : 3),
                                   borderRadius: BorderRadius.circular(
                                       15), // Rounded corners
-                                  boxShadow: [
+                                  boxShadow: const [
                                     BoxShadow(
                                       color: Colors.black26,
                                       blurRadius: 4,
